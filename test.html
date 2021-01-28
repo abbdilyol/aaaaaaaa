@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.0/annyang.min.js"></script> <!-- voice rec -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script> <!-- basic vue -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script> <!-- api -->
+</head>
+
+<body>
+    <div id="app">
+        <button>idk</button>  <!-- hide it/måste finnas för att texttospech ska funka/måste press 1 gång sen aldrig mer (if not restart) -->
+
+        <div v-if="num === 0">
+            <div v-for= "weather in info2" class="weather">
+            {{ weather.main }}
+            </div>
+        
+            <div>
+            temp: {{ info.temp }} C*
+            </div>
+        
+            <div >
+            humidity: {{ info.humidity }} %
+            </div>
+        </div>
+
+        <div v-else-if="num === 1">
+            <div>funkar</div>
+        </div>
+    
+    </div>
+
+    <script>
+        var app = new Vue({
+        el: '#app',
+        data () {
+            return {
+                num: 0,
+                info2: null,
+                info: null
+            }
+          },
+          mounted () {
+            axios.get('http://api.openweathermap.org/data/2.5/weather?q=vasteras&appid=572d93171b72994ef6363b5648a60746&units=metric')
+            .then(response => (this.info = response.data.main))
+
+            axios.get('http://api.openweathermap.org/data/2.5/weather?q=vasteras&appid=572d93171b72994ef6363b5648a60746&units=metric')
+            .then(response => (this.info2 = response.data.weather))
+        }
+        })
+        if (annyang) { //Här ska vi lägga alla funktioner baserat på sentences som kan sägas
+
+            var show = function() { //Funktionen show används när vi vill gå bort från startsidan och visa nåt
+                app.num = 1;    //Number change för att display en ny div
+                console.log('show');
+                speechSynthesis.speak(new SpeechSynthesisUtterance('Here you go')); //Texttospeech när vi bytit sida
+            };
+
+            var back = function() { //Funktion när vi vill gå tillbaks till meny aka startsida
+                app.num = 0; //Change number back
+                console.log('fi');
+            };  
+
+            var commands = { //Alla commands som används för speech recognition
+                'show': show, //När vi säger ordet 'show' executas function show
+                'back': back, //Same men annan mening
+            };
+
+            annyang.debug(); 
+            annyang.addCommands(commands); //Load commands så den vet
+            annyang.setLanguage('en');
+            annyang.start();
+
+        } 
+        else {
+        $(document).ready(function() {  //Idk om den behövs men ha de där
+            $('#unsupported').fadeIn('fast');
+        });
+        }
+    </script>
+
+</body>
+</html>
